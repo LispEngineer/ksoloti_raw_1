@@ -43,7 +43,36 @@ Raw STM32 software for running the Ksoloti Core 0.6 board.
   * It will lose connection after you click it and your code will be running
 
 
-# STM32 Coding
+# STM32 IOC
+
+## Clocks
+
+* External high speed clock is 8MHz per Schematic
+* System clock speed is 168MHz per Ksoloti firmware
+  * [Reference](https://github.com/ksoloti/ksoloti/blob/master/firmware/stm32f4xx_hal_conf.h#L131)
+
+## SDRAM
+
+SDRAM Pin: MCU Pin (per 0.6 Schematic)
+* A0-A12: PF0-5, PF12-15, PG0-2 (FMC_Axx)
+* DQ0-16: PD14-15, PD0-1, PE7-15, PD8-10 (FMC_Dxx)
+* BA0-1: PG4-5 (FMC_BAx)
+* CS_bar: PC2 (FMC_SDNE0)
+* CKE: PC3 (FMC_SDCKE0)
+* CLK: PG8 (FMC_SDCLK)
+* DQML/H: PE0/1 (FMC_MBL0/1)
+* WE_bar: PC0 (FMC_SDNWE)
+* CAS_bar: PG15 (FMC_SDNCAS)
+* RAS_bar: PF11 (FMC_SDNRAS)
+
+Configuration in IOC:
+* Connectivity -> FMC
+* SDRAM 1
+* Clock & chip enable: SDCKE0 + SDNE0
+* Internal bank number: 4 banks
+* Address: 13 bits
+* Data: 16 bits
+* 16-bit byte enable: Checked
 
 
 # References
@@ -58,4 +87,6 @@ Raw STM32 software for running the Ksoloti Core 0.6 board.
   * The main chip of the KSoloti
 * [Micron 48LC16M16A2P-6A-ITG](https://www.mouser.com/ProductDetail/Micron/MT48LC16M16A2P-6A-ITG?qs=rrS6PyfT74cSkrp4%2FxS6cg%3D%3D)
   * RAM used on my Ksoloti board
+  * [Micron datasheet](https://www.micron.com/products/memory/dram-components/sdram/part-catalog/part-detail/mt48lc16m16a2p-6a-it-g)
+    * 4 Meg x 16 x 4 banks
   * RAM used in schematic: [Alliance Memory AS4C16M16SA-6TIN](https://www.mouser.com/ProductDetail/Alliance-Memory/AS4C16M16SA-6TIN?qs=os3kWr9Y3%252BBqt2XJGYJjwg%3D%3D&utm_id=21520790617&gad_source=1)
