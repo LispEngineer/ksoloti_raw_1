@@ -74,6 +74,27 @@ Configuration in IOC:
 * Data: 16 bits
 * 16-bit byte enable: Checked
 
+Settings:
+* SDRAM timing in memory clock cycles: All 16
+* SDRAM control:
+  * Write protection: enable ([Reference](https://github.com/ksoloti/ksoloti/blob/c6305dd5c92fde1ad0d5dcc49afcf5de4b7e3a58/firmware/stm32f4xx_fmc.c#L932))
+
+### Status
+
+Currently, SDRAM is not working. The initial memory access causes a
+Hard Fault. I programmed the handler to blink the red LED quickly
+to show this.
+
+# Debugging
+
+It's easier to debug this with ST-LINK.
+
+I'm using the ST-LINK from a NUCLEO-F429ZI board disconnected
+from it's local STM32. I soldered on the J6 header for SWD
+and ran the 5 wires across from the NUCLEO to the Ksoloti.
+
+Then you can do all the usual fancy stuff for debugging.
+
 
 # References
 

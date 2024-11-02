@@ -45,9 +45,10 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 64K
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 192K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 1024K
+  CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 64K
+  RAM    (xrw)    : ORIGIN = 0x20000000, LENGTH = 192K
+  FLASH  (rx)     : ORIGIN = 0x08000000, LENGTH = 1024K
+  SDRAM  (xrw)    : ORIGIN = 0xC0000000, LENGTH = 32M
 }
 
 /* Sections */
@@ -196,6 +197,18 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
+	/* Our SDRAM - manually allocated and used */  
+	
+	_sdram = LOADADDR(.sdram);
+	
+  .sdram :
+  {
+    . = ALIGN(4);
+    *(.sdram)
+    *(.sdram.*)
+    . = ALIGN(4);
+  } > SDRAM
+  
   /* Remove information from the compiler libraries */
   /DISCARD/ :
   {

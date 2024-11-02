@@ -2,6 +2,9 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
+FMC.IPParameters=LoadToActiveDelay1,WriteProtection1
+FMC.LoadToActiveDelay1=16
+FMC.WriteProtection1=FMC_SDRAM_WRITE_PROTECTION_ENABLE
 File.Version=6
 KeepUserPlacement=false
 Mcu.CPN=STM32F429ZGT6

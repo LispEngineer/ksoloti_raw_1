@@ -57,6 +57,67 @@ static void MX_FMC_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void flash_leds(void) {
+  GPIO_PinState s1, s2;
+
+  while (1) {
+
+    s1 = HAL_GPIO_ReadPin(PB5_BOOT0_S1_GPIO_Port, PB5_BOOT0_S1_Pin);
+    s2 = HAL_GPIO_ReadPin(PA10_S2_GPIO_Port, PA10_S2_Pin);
+
+    if (s1) {
+      HAL_GPIO_TogglePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin);
+    } else {
+      HAL_GPIO_TogglePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin);
+    }
+
+    HAL_Delay(s2 ? 125 : 250);
+  }
+}
+
+/*
+ * Go through all the memory, write the address, read the address,
+ * and turn on an LED based on the result.
+ */
+void simple_sdram_test(void) {
+
+  // First show the LEDs for a second.
+  HAL_GPIO_WritePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin, GPIO_PIN_SET);
+  HAL_Delay(500);
+  HAL_GPIO_WritePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin, GPIO_PIN_SET);
+  HAL_Delay(500);
+  HAL_GPIO_WritePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin, GPIO_PIN_RESET);
+
+
+  void *sd_base = (void *)0xC000000;
+  // 32MB RAM, at 2 bytes per write = 16M writes
+  uint32_t sd_len = 0x10000; // 0x2000000;
+  uint16_t val_offset = 0xD0F1; // My initials, whee
+  uint32_t good = 0;
+
+  void *cur = sd_base;
+
+  // First write
+  while (cur < sd_base + sd_len) {
+    *((volatile uint16_t *)cur) = val_offset + (uint16_t)((uint32_t)cur & 0xFFFF);
+    cur = (void *)((uint32_t)cur + 2); // Go up by words since our memory is 16 bits wide
+  }
+
+  // Then read
+  // TODO
+
+  // Print status
+  while (1) {
+    if (good) {
+      HAL_GPIO_TogglePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin);
+    } else {
+      HAL_GPIO_TogglePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin);
+    }
+    HAL_Delay(200);
+  }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -100,17 +161,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    GPIO_PinState s1, s2;
-
-    s1 = HAL_GPIO_ReadPin(PB5_BOOT0_S1_GPIO_Port, PB5_BOOT0_S1_Pin);
-    s2 = HAL_GPIO_ReadPin(PA10_S2_GPIO_Port, PA10_S2_Pin);
-
-    if (s1) {
-      HAL_GPIO_TogglePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin);
-    } else {
-      HAL_GPIO_TogglePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin);
-    }
-    HAL_Delay(s2 ? 125 : 250);
+    // flash_leds();
+    simple_sdram_test();
   }
   /* USER CODE END 3 */
 }
@@ -184,7 +236,7 @@ static void MX_FMC_Init(void)
   hsdram1.Init.MemoryDataWidth = FMC_SDRAM_MEM_BUS_WIDTH_16;
   hsdram1.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
   hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_1;
-  hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
+  hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_ENABLE;
   hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_DISABLE;
   hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_DISABLE;
   hsdram1.Init.ReadPipeDelay = FMC_SDRAM_RPIPE_DELAY_0;
@@ -277,6 +329,10 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+
+  // Turn on RED LED and leave it
+  HAL_GPIO_WritePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin, GPIO_PIN_SET);
+
   while (1)
   {
   }
