@@ -92,13 +92,15 @@ void simple_sdram_test(void) {
 
   void *sd_base = (void *)0xC0000000;
   // 32MB RAM, at 2 bytes per write = 16M writes
-  uint32_t sd_len = 0x10000; // 0x2000000;
+  uint32_t sd_len = 0x2000000;
   uint16_t val_offset = 0xD0F1; // My initials, whee
   uint32_t good = 1;
   uint16_t val;
   uint16_t cur_val;
 
   void *cur = sd_base;
+
+  // This is reasonably slow - takes about 8 seconds
 
   // First write
   while (cur < sd_base + sd_len) {

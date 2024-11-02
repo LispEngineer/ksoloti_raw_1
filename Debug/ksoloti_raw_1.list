@@ -392,8 +392,8 @@ void simple_sdram_test(void) {
  800051a:	f04f 4340 	mov.w	r3, #3221225472	@ 0xc0000000
  800051e:	60fb      	str	r3, [r7, #12]
   // 32MB RAM, at 2 bytes per write = 16M writes
-  uint32_t sd_len = 0x10000; // 0x2000000;
- 8000520:	f44f 3380 	mov.w	r3, #65536	@ 0x10000
+  uint32_t sd_len = 0x2000000;
+ 8000520:	f04f 7300 	mov.w	r3, #33554432	@ 0x2000000
  8000524:	60bb      	str	r3, [r7, #8]
   uint16_t val_offset = 0xD0F1; // My initials, whee
  8000526:	f24d 03f1 	movw	r3, #53489	@ 0xd0f1
@@ -407,6 +407,8 @@ void simple_sdram_test(void) {
   void *cur = sd_base;
  8000530:	68fb      	ldr	r3, [r7, #12]
  8000532:	613b      	str	r3, [r7, #16]
+
+  // This is reasonably slow - takes about 8 seconds
 
   // First write
   while (cur < sd_base + sd_len) {
@@ -799,10 +801,6 @@ static void MX_FMC_Init(void)
   Command.ModeRegisterDefinition = 0;
  800074a:	2300      	movs	r3, #0
  800074c:	613b      	str	r3, [r7, #16]
-
-  /* Wait until the SDRAM controller is ready */
-  // while (FMC_GetFlagStatus(FMC_SDRAM_BANK1, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
  800074e:	1d3b      	adds	r3, r7, #4
  8000750:	f640 72ff 	movw	r2, #4095	@ 0xfff
@@ -811,7 +809,6 @@ static void MX_FMC_Init(void)
  8000758:	f001 fa7f 	bl	8001c5a <HAL_SDRAM_SendCommand>
  800075c:	4603      	mov	r3, r0
  800075e:	f887 3033 	strb.w	r3, [r7, #51]	@ 0x33
-  // Try FMC_SDRAM_SendCommand too?
 
   /* Step 4: Insert 100 us minimum delay - Min HAL Delay is 1ms */
   HAL_Delay(1);
@@ -822,8 +819,6 @@ static void MX_FMC_Init(void)
   Command.CommandMode            = FMC_SDRAM_CMD_PALL; /* Set MODE bits to "010" */
  8000768:	2302      	movs	r3, #2
  800076a:	607b      	str	r3, [r7, #4]
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
  800076c:	1d3b      	adds	r3, r7, #4
  800076e:	f640 72ff 	movw	r2, #4095	@ 0xfff
@@ -840,7 +835,6 @@ static void MX_FMC_Init(void)
   Command.AutoRefreshNumber      = 4;
  8000784:	2304      	movs	r3, #4
  8000786:	60fb      	str	r3, [r7, #12]
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
  8000788:	1d3b      	adds	r3, r7, #4
  800078a:	f640 72ff 	movw	r2, #4095	@ 0xfff
@@ -849,8 +843,6 @@ static void MX_FMC_Init(void)
  8000792:	f001 fa62 	bl	8001c5a <HAL_SDRAM_SendCommand>
  8000796:	4603      	mov	r3, r0
  8000798:	f887 3033 	strb.w	r3, [r7, #51]	@ 0x33
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
  800079c:	1d3b      	adds	r3, r7, #4
  800079e:	f640 72ff 	movw	r2, #4095	@ 0xfff
