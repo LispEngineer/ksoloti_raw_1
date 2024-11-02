@@ -2,9 +2,15 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
-FMC.IPParameters=LoadToActiveDelay1,WriteProtection1
+FMC.CASLatency1=FMC_SDRAM_CAS_LATENCY_3
+FMC.ColumnBitsNumber1=FMC_SDRAM_COLUMN_BITS_NUM_9
+FMC.IPParameters=LoadToActiveDelay1,WriteProtection1,CASLatency1,ReadBurst1,SDClockPeriod1,ColumnBitsNumber1,ReadPipeDelay1,ReadPipeDelay2
 FMC.LoadToActiveDelay1=16
-FMC.WriteProtection1=FMC_SDRAM_WRITE_PROTECTION_ENABLE
+FMC.ReadBurst1=FMC_SDRAM_RBURST_DISABLE
+FMC.ReadPipeDelay1=FMC_SDRAM_RPIPE_DELAY_2
+FMC.ReadPipeDelay2=FMC_SDRAM_RPIPE_DELAY_2
+FMC.SDClockPeriod1=FMC_SDRAM_CLOCK_PERIOD_3
+FMC.WriteProtection1=FMC_SDRAM_WRITE_PROTECTION_DISABLE
 File.Version=6
 KeepUserPlacement=false
 Mcu.CPN=STM32F429ZGT6

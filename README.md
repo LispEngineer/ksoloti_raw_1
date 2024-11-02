@@ -85,6 +85,40 @@ Currently, SDRAM is not working. The initial memory access causes a
 Hard Fault. I programmed the handler to blink the red LED quickly
 to show this.
 
+Reference: PM0214 Rev 10
+
+Stepping through the code, as soon as the write happens,
+three *System Control Block* (SBC) addresses change:
+```
+0xE000ED04 -> 00803000 = 0000 0000 1000 0000  0011 0000 0000 0000
+  Interrupt control and state register (ICSR)
+  VECTPENDING[3:0] = 3
+  RESERVED
+0xE000ED28 -> 00000400 = ... 0100 0000 0000
+  Configurable fault status register (CFSR; UFSR+BFSR+MMFSR)
+  IMPRECIS ERR
+0xE000ED2C -> 40000000
+  Hard fault status register (HFSR)
+  FORCED
+```
+
+Then once you enter the HardFault_Handler() they become:
+```
+0xE000ED04 -> 00000803 = 1000 0000 0011
+  Interrupt control and state register (ICSR)
+  VECACTIVE = 3
+  RETOBASE = 1
+0xE000ED30 -> 00000009
+  undocumented
+```
+
+That undocumented value is shown on the
+[ARM site here](https://developer.arm.com/documentation/ddi0439/b/Debug/About-debug/Debug-register-summary)
+as a `Debug Fault Status Register`. That is documented
+on the [ARM site here](https://developer.arm.com/documentation/ddi0403/d/Debug-Architecture/ARMv7-M-Debug/Debug-register-support-in-the-SCS/Debug-Fault-Status-Register--DFSR?lang=en).
+This doesn't seem to tell me anything particularly useful.
+
+
 # Debugging
 
 It's easier to debug this with ST-LINK.
