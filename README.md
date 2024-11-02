@@ -78,6 +78,14 @@ Settings:
 * SDRAM timing in memory clock cycles: All 16
 * SDRAM control:
   * Write protection: enable ([Reference](https://github.com/ksoloti/ksoloti/blob/c6305dd5c92fde1ad0d5dcc49afcf5de4b7e3a58/firmware/stm32f4xx_fmc.c#L932))
+  * See the [Ksoloti settings](https://github.com/ksoloti/ksoloti/blob/master/firmware/sdram.c#L62)
+    * Note that my STM32CubeIDE IOC editor does not like `Write Recovery Time` of `2`
+      and required me to set it to `3` to get rid of the error. (It explains why.)
+
+Looks like the SDRAM clock runs at base HCLK speed, divided by
+2 or 3 per `SDRAM common clock` setting. So we can run the RAM
+at 84MHz from our 168MHz main clock with a divide-by-2 setting.
+(84MHz = 11.9ns)
 
 ### Status
 
@@ -145,3 +153,4 @@ Then you can do all the usual fancy stuff for debugging.
   * [Micron datasheet](https://www.micron.com/products/memory/dram-components/sdram/part-catalog/part-detail/mt48lc16m16a2p-6a-it-g)
     * 4 Meg x 16 x 4 banks
   * RAM used in schematic: [Alliance Memory AS4C16M16SA-6TIN](https://www.mouser.com/ProductDetail/Alliance-Memory/AS4C16M16SA-6TIN?qs=os3kWr9Y3%252BBqt2XJGYJjwg%3D%3D&utm_id=21520790617&gad_source=1)
+* [ST FMC SDRAM Setup Guide](https://community.st.com/t5/stm32-mcus/how-to-set-up-the-fmc-peripheral-to-interface-with-the-sdram/ta-p/49457)
