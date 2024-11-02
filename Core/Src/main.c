@@ -90,22 +90,33 @@ void simple_sdram_test(void) {
   HAL_GPIO_WritePin(PG6_GREEN_LED_GPIO_Port, PG6_GREEN_LED_Pin, GPIO_PIN_RESET);
 
 
-  void *sd_base = (void *)0xC000000;
+  void *sd_base = (void *)0xC0000000;
   // 32MB RAM, at 2 bytes per write = 16M writes
   uint32_t sd_len = 0x10000; // 0x2000000;
   uint16_t val_offset = 0xD0F1; // My initials, whee
-  uint32_t good = 0;
+  uint32_t good = 1;
+  uint16_t val;
+  uint16_t cur_val;
 
   void *cur = sd_base;
 
   // First write
   while (cur < sd_base + sd_len) {
-    *((volatile uint16_t *)cur) = val_offset + (uint16_t)((uint32_t)cur & 0xFFFF);
+    val = val_offset + (uint16_t)((uint32_t)cur & 0xFFFF);
+    *((volatile uint16_t *)cur) = val;
     cur = (void *)((uint32_t)cur + 2); // Go up by words since our memory is 16 bits wide
   }
 
   // Then read
-  // TODO
+  cur = sd_base;
+  while (cur < sd_base + sd_len) {
+    val = val_offset + (uint16_t)((uint32_t)cur & 0xFFFF);
+    cur_val = *((volatile uint16_t *)cur);
+    if (cur_val != val) {
+      good = 0;
+    }
+    cur = (void *)((uint32_t)cur + 2); // Go up by words since our memory is 16 bits wide
+  }
 
   // Print status
   while (1) {
@@ -114,7 +125,7 @@ void simple_sdram_test(void) {
     } else {
       HAL_GPIO_TogglePin(PC6_RED_LED_GPIO_Port, PC6_RED_LED_Pin);
     }
-    HAL_Delay(200);
+    HAL_Delay(400);
   }
 }
 
@@ -279,6 +290,8 @@ static void MX_FMC_Init(void)
   // See also Ksoloti code: https://github.com/ksoloti/ksoloti/blob/master/firmware/sdram.c#L223
   // See SDRAM_InitSequence()
 
+  HAL_StatusTypeDef status;
+
   FMC_SDRAM_CommandTypeDef Command;
   /* Step 1 and Step 2 already done in HAL_SDRAM_Init() */
   /* Step 3: Configure a clock configuration enable command */
@@ -289,8 +302,8 @@ static void MX_FMC_Init(void)
 
   /* Wait until the SDRAM controller is ready */
   // while (FMC_GetFlagStatus(FMC_SDRAM_BANK1, FMC_FLAG_Busy) != RESET);
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
   // Try FMC_SDRAM_SendCommand too?
 
   /* Step 4: Insert 100 us minimum delay - Min HAL Delay is 1ms */
@@ -299,17 +312,17 @@ static void MX_FMC_Init(void)
   /* Step 5: Configure a PALL (precharge all) command */
   Command.CommandMode            = FMC_SDRAM_CMD_PALL; /* Set MODE bits to "010" */
   // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
 
   /* Step 6: Configure an Auto Refresh command... twice */
   Command.CommandMode            = FMC_SDRAM_CMD_AUTOREFRESH_MODE; /* Set MODE bits to "011" */
   Command.AutoRefreshNumber      = 4;
   // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
+  status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
   // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
 
   /* Step 7: Program the external memory mode register */
   Command.CommandMode            = FMC_SDRAM_CMD_LOAD_MODE;/*set the MODE bits to "100" */
@@ -320,8 +333,8 @@ static void MX_FMC_Init(void)
     SDRAM_MODEREG_CAS_LATENCY_2 |
     SDRAM_MODEREG_OPERATING_MODE_STANDARD |
     SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
 
   /* Step 8: Set the refresh rate counter - refer to section SDRAM refresh timer register in RM0455 */
   /* Per our SDRAM:
@@ -336,11 +349,13 @@ static void MX_FMC_Init(void)
    *       = 646.25
    *       = ~646
    */
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_ProgramRefreshRate(&hsdram1, 646); // KSoloti uses 683
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_ProgramRefreshRate(&hsdram1, 646); // KSoloti uses 683
 
-  for (int i = 0; i < 100000; i++);
-  HAL_SDRAM_WriteProtection_Disable(&hsdram1);
+  // for (int i = 0; i < 100000; i++);
+  status = HAL_SDRAM_WriteProtection_Disable(&hsdram1); // This returns HAL_ERROR
+  // for (int i = 0; i < 100000; i++);
+  for (int i = 0; i < 1; i++);
 
   /* USER CODE END FMC_Init 2 */
 }
