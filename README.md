@@ -17,15 +17,43 @@ Raw STM32 software for running the Ksoloti Core 0.6 board.
 
 * 2 User LEDs
 * 2 User Buttons (S1-2)
+* External clock (8MHz)
+* SDRAM
+  * Additional SDRAM initialization sequence manually written
 
 ## Demonstration App
 
+Capabilities:
 * Blink Red or Green LED
   * Vary color depending on S1
   * Vary speed according to S2
+* Write data and read data to all SDRAM
+  * Flash green if OK, red if not
+
+Useful stuff:
+* Sets up SDRAM for Use
+
+## TODO
+
+* Set up linker file to allow allocating ordinary variables
+  in SDRAM, in both initialized and BSS (zero-initialized)
+  sections.
+  * See [my firmware here](https://github.com/LispEngineer/nucleo-uart/blob/main/STM32F767ZITX_FLASH.ld#L121)
+    for how to do this. It requires changing ARM assembly 
+    initialization code as well.
+
+* STM32 Pins/Peripherals
+  * ADAU1961 Audio Codec
+    * I2S, I2C
+  * GPIO
+  * SD Card
+  * MIDI In & Out
+  * USB: Programmer, Host
 
 
-# Programming the KSoloti via USB
+# Programming the KSoloti
+
+## Via USB
 
 * DFU Mode: Hold S1 and power up the Ksoloti
   * Plug USB-C into the "PWR & PROG" port
@@ -42,6 +70,14 @@ Raw STM32 software for running the Ksoloti Core 0.6 board.
   * Click `Start Programming`
   * It will lose connection after you click it and your code will be running
 
+## Via SWD
+
+* See `Debugging` below
+* Just use an ST-LINK and connect the 5 wires for SWD
+* Note that the SWD power does *not* power the Ksoloti
+
+To use a Nucleo board for this purpose, see UM1974 Rev 10
+page 19 section 6.3.4.
 
 # STM32 IOC
 
@@ -82,9 +118,9 @@ Settings:
     * Note that my STM32CubeIDE IOC editor does not like `Write Recovery Time` of `2`
       and required me to set it to `3` to get rid of the error. (It explains why.)
 
-Looks like the SDRAM clock runs at base HCLK speed, divided by
-2 or 3 per `SDRAM common clock` setting. So we can run the RAM
-at 84MHz from our 168MHz main clock with a divide-by-2 setting.
+The SDRAM clock runs at base HCLK speed, divided by
+2 or 3 per `SDRAM common clock` setting. The RAM can run
+at 84MHz from the 168MHz main clock with a divide-by-2 setting.
 (84MHz = 11.9ns)
 
 ### SDRAM In Code
@@ -95,6 +131,11 @@ or watch [Phil's video](https://www.youtube.com/watch?v=h28D4AaPSjg).
 
 In short, you have to send the SDRAM startup sequence manually yourself.
 You also have to set the SDRAM refresh interval.
+
+The initialization sequence is described in the
+[Micron Datasheet](https://www.micron.com/products/memory/dram-components/sdram/part-catalog/part-detail/mt48lc16m16a2p-6a-it-g) (Revision W dated 5/15)
+on page 44. I did not code in the exact wait times,
+but it seems to work fine.
 
 
 # Debugging

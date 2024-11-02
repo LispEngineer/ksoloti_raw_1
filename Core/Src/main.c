@@ -299,29 +299,19 @@ static void MX_FMC_Init(void)
   Command.CommandTarget          = FMC_SDRAM_CMD_TARGET_BANK1; /* configure the Target Bank bits */
   Command.AutoRefreshNumber      = 1;
   Command.ModeRegisterDefinition = 0;
-
-  /* Wait until the SDRAM controller is ready */
-  // while (FMC_GetFlagStatus(FMC_SDRAM_BANK1, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
-  // Try FMC_SDRAM_SendCommand too?
 
   /* Step 4: Insert 100 us minimum delay - Min HAL Delay is 1ms */
   HAL_Delay(1);
 
   /* Step 5: Configure a PALL (precharge all) command */
   Command.CommandMode            = FMC_SDRAM_CMD_PALL; /* Set MODE bits to "010" */
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
 
   /* Step 6: Configure an Auto Refresh command... twice */
   Command.CommandMode            = FMC_SDRAM_CMD_AUTOREFRESH_MODE; /* Set MODE bits to "011" */
   Command.AutoRefreshNumber      = 4;
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
-  // while (FMC_GetFlagStatus(FMC_Bank1_SDRAM, FMC_FLAG_Busy) != RESET);
-  // for (int i = 0; i < 100000; i++);
   status = HAL_SDRAM_SendCommand(&hsdram1, &Command, 0xfff);
 
   /* Step 7: Program the external memory mode register */
